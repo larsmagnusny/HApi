@@ -24,5 +24,11 @@ namespace HApi.Controllers
         {
             return new LoginResult{ Token = Guid.NewGuid().ToString() };
         }
+
+        [HttpPost]
+        public LoginResult Post()
+        {
+            return new LoginResult{ Token = Guid.NewGuid().ToString() };
+        }
     }
 }
