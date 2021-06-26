@@ -32,7 +32,6 @@ namespace HApi.Controllers
             if (user != null && user.Password_SHA256.Equals(new SHA256Hash(loginParameters.Password)))
             {
                 Guid newToken = Guid.NewGuid();
-                HttpContext.Session.Set("Token", newToken.ToByteArray());
                 return new LoginResult { Token = newToken.ToString() };
             }
 
