@@ -23,9 +23,9 @@ namespace HApi.Controllers
         }
 
         [HttpPost]
-        public bool Post([FromBody] LoginParameters loginParameters)
+        public bool Post([FromBody] LoginResult checkTokenParameters)
         {
-            return true;
+            return TokenStorage.CheckToken(Guid.Parse(checkTokenParameters.Token));
         }
     }
 }

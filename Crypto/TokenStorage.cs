@@ -15,6 +15,8 @@ namespace HApi.Crypto {
         private static LinkedList<Token> ExpireQueue = new LinkedList<Token>();
 
         public static void AddToken(Guid token, TimeSpan expiresIn){
+            Update(); // Check other tokens in case any have expired...
+
             var newToken = new Token {
                 Guid = token,
                 ExpireDateTime = DateTime.UtcNow.Add(expiresIn)
@@ -32,6 +34,8 @@ namespace HApi.Crypto {
 
         public static bool CheckToken(Guid token)
         {
+            Update(); // Check other tokens in case any have expired...
+
             lock (tokenLock)
             {
                 if (!AllTokens.ContainsKey(token))
@@ -55,9 +59,7 @@ namespace HApi.Crypto {
                     }
                 }
             }
-
-            Update(); // Check other tokens in case any have expired...
-
+            
             return true;
         }
 
@@ -73,6 +75,7 @@ namespace HApi.Crypto {
                     lock (tokenLock)
                     {
                         ValidTokens.Remove(currentToken.Guid);
+                        AllTokens.Remove(currentToken.Guid);
                         ExpireQueue.Remove(currentToken);
                     }
 
