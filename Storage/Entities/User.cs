@@ -8,9 +8,7 @@ namespace HApi.Storage.Entities {
     {
         public Guid UserId{ get; set; }
         public string Username{ get; set; }
-        public SHA256Hash Password_SHA256 { get; set; }
-
-        public Profile Profile { get; set; }
+        public string Password_SHA256 { get; set; }
 
         public bool Equals([AllowNull] User other)
         {

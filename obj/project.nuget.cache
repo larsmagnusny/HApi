@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "aQgk27E2wEjl/9PSjTXm7M/jYxQJH6iQeSxzWflnIoy2ikGRXJnyhol130h4H2gHZ/CAdGhLlT8aMeixVxHmfw==",
+  "dgSpecHash": "wyS/mul+mj9jyj+b7XFByEAaunqOqqh2zKEGM3KNFqItYzn/f/0OwK7ft4tE4TlYMwkx4+8CZ80mpVFyECcGXg==",
   "success": true,
   "projectFilePath": "C:\\Users\\larsm\\Documents\\GitHub\\HApi\\HApi.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\larsm\\.nuget\\packages\\litedb\\5.0.10\\litedb.5.0.10.nupkg.sha512",
     "C:\\Users\\larsm\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\larsm\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\larsm\\.nuget\\packages\\runtime.native.system.data.sqlclient.sni\\4.7.0\\runtime.native.system.data.sqlclient.sni.4.7.0.nupkg.sha512",

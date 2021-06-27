@@ -8,6 +8,7 @@ using HApi.Models;
 using HApi.Storage;
 using HApi.Storage.Entities;
 using HApi.Crypto;
+using LiteDB;
 
 namespace HApi.Controllers
 {
@@ -16,20 +17,22 @@ namespace HApi.Controllers
     public class LoginController : ControllerBase
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly IDataStorage<User> _userStorage;
 
-        public LoginController(ILogger<LoginController> logger, IDataStorage<User> userStorage)
+        public LoginController(ILogger<LoginController> logger)
         {
             _logger = logger;
-            _userStorage = userStorage;
         }
 
         [HttpPost]
         public LoginResult Post([FromBody] LoginParameters loginParameters)
         {
-            User user = _userStorage.Find(o => o.Username == loginParameters.Username);
+            using var db = new LiteDatabase(@"H.db");
 
-            if (user != null && user.Password_SHA256.Equals(new SHA256Hash(loginParameters.Password)))
+            var users = db.GetCollection<User>();
+
+            User user = users.Find(o => o.Username == loginParameters.Username).FirstOrDefault();
+
+            if (user != null && user.Password_SHA256.Equals((new SHA256Hash(loginParameters.Password)).ToString()))
             {
                 Guid newToken = Guid.NewGuid();
                 TokenStorage.AddToken(newToken);

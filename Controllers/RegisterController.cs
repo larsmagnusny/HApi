@@ -8,6 +8,7 @@ using HApi.Models;
 using HApi.Storage;
 using HApi.Storage.Entities;
 using HApi.Crypto;
+using LiteDB;
 
 namespace HApi.Controllers
 {
@@ -16,37 +17,42 @@ namespace HApi.Controllers
     public class RegisterController : ControllerBase
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly IDataStorage<User> _userStorage;
 
-        public RegisterController(ILogger<LoginController> logger, IDataStorage<User> userStorage)
+        public RegisterController(ILogger<LoginController> logger)
         {
             _logger = logger;
-            _userStorage = userStorage;
         }
 
         [HttpPost]
         public RegisterResult Post([FromBody] RegisterParameters registerParameters)
         {
-            User existingUser = _userStorage.Find(u => u.Username == registerParameters.Username || u.Profile.Email == registerParameters.Email);
+            using var db = new LiteDatabase(@"H.db");
 
-            if (existingUser != null)
+            var users = db.GetCollection<User>();
+            var profiles = db.GetCollection<Profile>();
+
+            User existingUser = users.Find(u => u.Username == registerParameters.Username).FirstOrDefault();
+            Profile existingProfile = profiles.Find(p => p.Email == registerParameters.Email).FirstOrDefault();
+
+            if (existingUser != null || existingProfile != null)
                 return new RegisterResult { Succeeded = false };
 
             User user = new User
             {
                 UserId = Guid.NewGuid(),
                 Username = registerParameters.Username,
-                Password_SHA256 = new SHA256Hash(registerParameters.Password),
-                Profile = new Profile
-                {
-                    FirstName = registerParameters.FirstName,
-                    LastName = registerParameters.LastName,
-                    Email = registerParameters.Email
-                }
+                Password_SHA256 = (new SHA256Hash(registerParameters.Password)).ToString()
             };
 
-            _userStorage.Add(user);
-            _userStorage.SaveToDisk();
+            Profile profile = new Profile
+            {
+                FirstName = registerParameters.FirstName,
+                LastName = registerParameters.LastName,
+                Email = registerParameters.Email
+            };
+
+            users.Insert(user);
+            profiles.Insert(profile);
 
             return new RegisterResult { Succeeded = false };
         }
