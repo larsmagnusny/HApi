@@ -14,7 +14,9 @@ namespace HApi.Crypto {
         private static Dictionary<Guid, LinkedListNode<Token>> AllTokens = new Dictionary<Guid, LinkedListNode<Token>>();
         private static LinkedList<Token> ExpireQueue = new LinkedList<Token>();
 
-        public static void AddToken(Guid token, TimeSpan expiresIn){
+        private static TimeSpan expiresIn = TimeSpan.FromMinutes(1);
+
+        public static void AddToken(Guid token){
             Update(); // Check other tokens in case any have expired...
 
             var newToken = new Token {
@@ -47,16 +49,21 @@ namespace HApi.Crypto {
 
                 var now = DateTime.UtcNow;
 
-                if (currentToken.ExpireDateTime < now)
+                lock (queueLock)
                 {
-                    lock (queueLock)
+                    ExpireQueue.Remove(currentItem);
+                    AllTokens.Remove(currentToken.Guid);
+
+                    if(currentToken.ExpireDateTime < now)
                     {
                         ValidTokens.Remove(currentToken.Guid);
-                        AllTokens.Remove(currentToken.Guid);
-                        ExpireQueue.Remove(currentToken);
-
                         return false;
                     }
+                    
+                    currentToken.ExpireDateTime = DateTime.UtcNow;
+                        
+                    ExpireQueue.AddLast(currentToken);
+                    AllTokens.Add(currentToken.Guid, ExpireQueue.Last);
                 }
             }
             
@@ -76,7 +83,7 @@ namespace HApi.Crypto {
                     {
                         ValidTokens.Remove(currentToken.Guid);
                         AllTokens.Remove(currentToken.Guid);
-                        ExpireQueue.Remove(currentToken);
+                        ExpireQueue.Remove(currentItem);
                     }
 
                     currentToken = ExpireQueue.First?.Value;
