@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using HApi.Storage.InitialData;
+using LiteDB;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,9 @@ namespace HApi.DataAccess
         public HDbContext(IOptions<LiteDbOptions> options)
         {
             Database = new LiteDatabase(options.Value.DatabaseLocation);
+
+            ItemInit.Init(Database);
+            UserRepair.Repair(Database); // Repair users if they somehow loose their data
         }
     }
 }

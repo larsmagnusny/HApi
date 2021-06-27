@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using HApi.Models;
-using HApi.Storage;
 using HApi.Storage.Entities;
 using HApi.Crypto;
 using LiteDB;
 using HApi.DataAccess;
+using HApi.Storage.InitialData;
 
 namespace HApi.Controllers
 {
@@ -38,33 +36,9 @@ namespace HApi.Controllers
             if (existingUser != null || existingProfile != null)
                 return new RegisterResult { Succeeded = false };
 
-            User user = new User
-            {
-                UserId = Guid.NewGuid(),
-                Username = registerParameters.Username,
-                Password_SHA256 = (new SHA256Hash(registerParameters.Password)).ToString()
-            };
+            UserInit.Init(_db.Database, registerParameters);
 
-            Profile profile = new Profile
-            {
-                FirstName = registerParameters.FirstName,
-                LastName = registerParameters.LastName,
-                Email = registerParameters.Email
-            };
-
-            users.Insert(user);
-            profiles.Insert(profile);
-
-            return new RegisterResult { Succeeded = false };
+            return new RegisterResult { Succeeded = true };
         }
-    }
-
-    public class RegisterParameters
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
     }
 }

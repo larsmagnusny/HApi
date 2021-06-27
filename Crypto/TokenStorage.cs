@@ -74,6 +74,17 @@ namespace HApi.Crypto {
             return true;
         }
 
+        public static Guid? FindUser(Guid token)
+        {
+            lock (tokenLock)
+            {
+                if (TokenUsers.ContainsKey(token))
+                    return TokenUsers[token];
+            }
+
+            return null;
+        }
+
         public static void Update(){
             lock(queueLock){
                 // Remove all tokens that have expired

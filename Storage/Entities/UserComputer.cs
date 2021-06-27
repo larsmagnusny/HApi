@@ -1,3 +1,5 @@
+using System;
+
 namespace HApi.Storage.Entities {
     public class UserComputer {
         public Guid UserId { get; set; }
