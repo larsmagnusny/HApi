@@ -11,33 +11,72 @@ namespace HApi.Crypto {
         private static object tokenLock = new object();
         private static object queueLock = new object();
         private static HashSet<Guid> ValidTokens = new HashSet<Guid>();
+        private static Dictionary<Guid, LinkedListNode<Token>> AllTokens = new Dictionary<Guid, LinkedListNode<Token>>();
         private static LinkedList<Token> ExpireQueue = new LinkedList<Token>();
 
-        public void AddToken(Guid token, TimeSpan expiresIn){
+        public static void AddToken(Guid token, TimeSpan expiresIn){
             var newToken = new Token {
                 Guid = token,
                 ExpireDateTime = DateTime.UtcNow.Add(expiresIn)
             };
 
             lock(tokenLock){
-                if(!Tokens.ContainsKey(token))
+                if(!ValidTokens.Contains(token))
                 {
-                    Tokens.Add(token);
+                    ValidTokens.Add(token);
                     ExpireQueue.AddLast(newToken);
+                    AllTokens.Add(token, ExpireQueue.Last);
                 }
             }
         }
 
-        public void Update(){
+        public static bool CheckToken(Guid token)
+        {
+            lock (tokenLock)
+            {
+                if (!AllTokens.ContainsKey(token))
+                    return false;
+
+                // Remove all tokens that have expired
+                var currentItem = AllTokens[token];
+                Token currentToken = currentItem?.Value;
+
+                var now = DateTime.UtcNow;
+
+                if (currentToken.ExpireDateTime < now)
+                {
+                    lock (queueLock)
+                    {
+                        ValidTokens.Remove(currentToken.Guid);
+                        AllTokens.Remove(currentToken.Guid);
+                        ExpireQueue.Remove(currentToken);
+
+                        return false;
+                    }
+                }
+            }
+
+            Update(); // Check other tokens in case any have expired...
+
+            return true;
+        }
+
+        public static void Update(){
             lock(queueLock){
                 // Remove all tokens that have expired
                 var currentItem = ExpireQueue.First;
-                Token currentToken = firstItem.Value;
+                Token currentToken = currentItem?.Value;
                 
                 var now = DateTime.UtcNow;
 
                 while(currentToken != null && currentToken.ExpireDateTime < now){
-                    
+                    lock (tokenLock)
+                    {
+                        ValidTokens.Remove(currentToken.Guid);
+                        ExpireQueue.Remove(currentToken);
+                    }
+
+                    currentToken = ExpireQueue.First?.Value;
                 }
             }
         }
