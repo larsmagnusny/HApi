@@ -60,7 +60,7 @@ namespace HApi.Crypto {
                         return false;
                     }
                     
-                    currentToken.ExpireDateTime = DateTime.UtcNow;
+                    currentToken.ExpireDateTime = DateTime.UtcNow.Add(expiresIn);
                         
                     ExpireQueue.AddLast(currentToken);
                     AllTokens.Add(currentToken.Guid, ExpireQueue.Last);
@@ -78,15 +78,18 @@ namespace HApi.Crypto {
                 
                 var now = DateTime.UtcNow;
 
-                while(currentToken != null && currentToken.ExpireDateTime < now){
+                while(currentItem != null && currentToken != null && currentToken.ExpireDateTime < now){
                     lock (tokenLock)
                     {
                         ValidTokens.Remove(currentToken.Guid);
                         AllTokens.Remove(currentToken.Guid);
-                        ExpireQueue.Remove(currentItem);
+
+                        if(currentItem.List != null)
+                            ExpireQueue.Remove(currentItem);
                     }
 
-                    currentToken = ExpireQueue.First?.Value;
+                    currentItem = ExpireQueue.First;
+                    currentToken = currentItem?.Value;
                 }
             }
         }

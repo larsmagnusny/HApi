@@ -9,6 +9,7 @@ using HApi.Storage;
 using HApi.Storage.Entities;
 using HApi.Crypto;
 using LiteDB;
+using HApi.DataAccess;
 
 namespace HApi.Controllers
 {
@@ -17,19 +18,19 @@ namespace HApi.Controllers
     public class RegisterController : ControllerBase
     {
         private readonly ILogger<LoginController> _logger;
+        private readonly IHDbContext _db;
 
-        public RegisterController(ILogger<LoginController> logger)
+        public RegisterController(ILogger<LoginController> logger, IHDbContext context)
         {
             _logger = logger;
+            _db = context;
         }
 
         [HttpPost]
         public RegisterResult Post([FromBody] RegisterParameters registerParameters)
         {
-            using var db = new LiteDatabase(@"H.db");
-
-            var users = db.GetCollection<User>();
-            var profiles = db.GetCollection<Profile>();
+            var users = _db.Database.GetCollection<User>();
+            var profiles = _db.Database.GetCollection<Profile>();
 
             User existingUser = users.Find(u => u.Username == registerParameters.Username).FirstOrDefault();
             Profile existingProfile = profiles.Find(p => p.Email == registerParameters.Email).FirstOrDefault();
