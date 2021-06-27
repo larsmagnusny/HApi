@@ -37,7 +37,7 @@ namespace HApi.Controllers
             if (user != null && user.Password_SHA256.Equals((new SHA256Hash(loginParameters.Password)).ToString()))
             {
                 Guid newToken = Guid.NewGuid();
-                TokenStorage.AddToken(newToken);
+                TokenStorage.AddToken(newToken, user.UserId);
                 return new LoginResult { Token = newToken.ToString() };
             }
 
