@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,12 @@ namespace HApi.Crypto {
     }
 
     public static class TokenStorage {
+        public static void Init(IConfiguration configuration)
+        {
+            expiresIn = TimeSpan.FromMinutes((int)configuration.GetValue(typeof(int), "Timeout"));
+            slidingExpiration = (bool)configuration.GetValue(typeof(bool), "SlidingExpiration");
+        }
+
         private static object tokenLock = new object();
         private static object queueLock = new object();
         private static HashSet<Guid> ValidTokens = new HashSet<Guid>();
@@ -17,6 +24,7 @@ namespace HApi.Crypto {
         private static Dictionary<Guid, Guid> TokenUsers = new Dictionary<Guid, Guid>();
 
         private static TimeSpan expiresIn = TimeSpan.FromMinutes(1);
+        private static bool slidingExpiration = true;
 
         public static void AddToken(Guid token, Guid userId){
             Update(); // Check other tokens in case any have expired...
@@ -54,20 +62,24 @@ namespace HApi.Crypto {
 
                 lock (queueLock)
                 {
-                    ExpireQueue.Remove(currentItem);
-                    AllTokens.Remove(currentToken.Guid);
-
                     if(currentToken.ExpireDateTime < now)
                     {
+                        ExpireQueue.Remove(currentItem);
+                        AllTokens.Remove(currentToken.Guid);
                         ValidTokens.Remove(currentToken.Guid);
                         TokenUsers.Remove(currentToken.Guid);
                         return false;
                     }
-                    
-                    currentToken.ExpireDateTime = DateTime.UtcNow.Add(expiresIn);
-                        
-                    ExpireQueue.AddLast(currentToken);
-                    AllTokens.Add(currentToken.Guid, ExpireQueue.Last);
+
+                    if (slidingExpiration)
+                    {
+                        currentToken.ExpireDateTime = DateTime.UtcNow.Add(expiresIn);
+
+                        ExpireQueue.Remove(currentItem);
+                        AllTokens.Remove(currentToken.Guid);
+                        ExpireQueue.AddLast(currentToken);
+                        AllTokens.Add(currentToken.Guid, ExpireQueue.Last);
+                    }
                 }
             }
             

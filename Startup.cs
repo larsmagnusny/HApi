@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HApi.Crypto;
 using HApi.DataAccess;
 using HApi.Storage;
 using HApi.Storage.Entities;
@@ -29,6 +30,8 @@ namespace HApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            TokenStorage.Init(Configuration.GetSection("TokenStorage"));
+
             services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
             services.AddSingleton<IHDbContext, HDbContext>();
             services.AddCors();
