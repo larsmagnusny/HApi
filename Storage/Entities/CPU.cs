@@ -1,5 +1,6 @@
 namespace HApi.Storage.Entities {
     public class CPU {
+        [Key]
         public int Id { get; set; }
         public int NumCores { get; set; }
         public int MHZ { get; set; }

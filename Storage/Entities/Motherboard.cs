@@ -1,5 +1,6 @@
 namespace HApi.Storage.Entities {
     public class Motherboard {
+        [Key]
         public int Id { get; set; }
         public int CPUSlots { get; set; }
         public int RAMSlots { get; set; }

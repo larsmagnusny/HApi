@@ -1,5 +1,6 @@
 namespace HApi.Storage.Entities {
     public class RAM {
+        [Key]
         public int Id { get; set; }
         public int MHZ { get; set; }
         public int MB { get; set; }

@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\larsm\\Documents\\GitHub\\HApi\\HApi.csproj": {}
+    "/Users/lars/Desktop/Git/HApi/HApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\larsm\\Documents\\GitHub\\HApi\\HApi.csproj": {
+    "/Users/lars/Desktop/Git/HApi/HApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\larsm\\Documents\\GitHub\\HApi\\HApi.csproj",
+        "projectUniqueName": "/Users/lars/Desktop/Git/HApi/HApi.csproj",
         "projectName": "HApi",
-        "projectPath": "C:\\Users\\larsm\\Documents\\GitHub\\HApi\\HApi.csproj",
-        "packagesPath": "C:\\Users\\larsm\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\larsm\\Documents\\GitHub\\HApi\\obj\\",
+        "projectPath": "/Users/lars/Desktop/Git/HApi/HApi.csproj",
+        "packagesPath": "/Users/lars/.nuget/packages/",
+        "outputPath": "/Users/lars/Desktop/Git/HApi/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\larsm\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/lars/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -47,6 +41,20 @@
             "LiteDB": {
               "target": "Package",
               "version": "[5.0.10, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[5.0.7, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[5.0.7, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[5.0.7, )"
             },
             "System.Data.SqlClient": {
               "target": "Package",
@@ -71,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/5.0.301/RuntimeIdentifierGraph.json"
         }
       }
     }
