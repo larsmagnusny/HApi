@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 
-namespace HApi.Crypto {
+namespace HApi.Authorization {
     public class Token {
         public Guid Guid { get; set; }
         public DateTime ExpireDateTime { get; set; }

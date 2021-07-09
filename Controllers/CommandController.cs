@@ -4,11 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using HApi.Models;
-using HApi.Storage;
-using HApi.Storage.Entities;
-using HApi.Crypto;
 using HApi.DataAccess;
+using HApi.Authorization;
+using HApi.DataAccess.Entities;
 
 namespace HApi.Controllers
 {
@@ -17,95 +15,72 @@ namespace HApi.Controllers
     public class CommandController : ControllerBase
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly IHDbContext _db;
+        private readonly HContext _db;
 
-        public ComputerController(ILogger<LoginController> logger, IHDbContext context)
+        public CommandController(ILogger<LoginController> logger, HContext context)
         {
             _logger = logger;
             _db = context;
         }
 
+        [HttpGet]
+        [VerifyToken]
         public FolderResult Cd(Guid token, int? currentFolderId, string path){
-            if (!TokenStorage.CheckToken(token))
-                return null;
+            Guid userGuid = (Guid)HttpContext.Items["UserId"];
+            string[] pathArr = path.Split("/");
 
-            var userGuid = TokenStorage.FindUser(token);
+            var folders = _db.Folders;
 
-            if(userGuid.HasValue){
+            int curCount = 0;
+            var curFolder = folders.FirstOrDefault(o => o.ParentId == currentFolderId && o.UserId == userGuid && o.FolderName.CompareTo(pathArr[curCount]) == 0);
+            curCount++;
 
-                string[] pathArr = path.Split("/");
-
-                var folders = _db.Database.GetCollection<Folder>();
-
-                int curCount = 0;
-                var curFolder = folders.FirstOrDefault(o => o.ParentId == currentFolderId && o.UserId == userGuid && o.FolderName.CompareTo(pathArr[curCount++]));
-
-                while(curCount < pathArr.Length){
-                    curFolder = folders.FirstOrDefault(o => o.ParentId == curFolder.FolderId && o.UserId == userGuid && o.FolderName.CompareTo(pathArr[curCount++]));
-
-                    if(curFolder == null){
-                        return null;
-                    }
+            while(curCount < pathArr.Length){
+                curFolder = folders.FirstOrDefault(o => o.ParentId == curFolder.FolderId && o.UserId == userGuid && o.FolderName.CompareTo(pathArr[curCount]) == 0);
+                curCount++;
+                if(curFolder == null){
+                    return null;
                 }
-
-                return new FolderResult { FolderId = curFolder.FolderId, FolderName = curFolder.FolderName };
             }
 
-            return null;
+            return new FolderResult { FolderId = curFolder.FolderId, FolderName = curFolder.FolderName };
         }
 
         [HttpGet]
+        [VerifyToken]
         public IEnumerable<FolderResult> Ls(Guid token, int? currentFolderId)
         {
-            if (!TokenStorage.CheckToken(token))
-                return new List<FolderResult>();
+            var folders = _db.Folders;
 
-            var userGuid = TokenStorage.FindUser(token);
-
-            if(userGuid.HasValue){
-                var folders = _db.Database.GetCollection<Folder>();
-
-                return folders.Where(o => o.ParentId == currentFolderId).Select(o => new FolderResult{
-                    FolderId = o.FolderId,
-                    FolderName = o.FolderName
-                });
-            }
-
-            return new List<FolderResult>();
+            return folders.Where(o => o.ParentId == currentFolderId).Select(o => new FolderResult{
+                FolderId = o.FolderId,
+                FolderName = o.FolderName
+            });
         }
 
         [HttpGet]
+        [VerifyToken]
         public IEnumerable<string> Mkdir(Guid token, int? currentFolderId, string FolderName){
-            if (!TokenStorage.CheckToken(token))
-                return new List<string>();
+            Guid userGuid = (Guid)HttpContext.Items["UserId"];
+            var folders = _db.Folders;
 
-            var userGuid = TokenStorage.FindUser(token);
+            if(currentFolderId.HasValue){
+                var parentFolder = folders.FirstOrDefault(o => o.FolderId == currentFolderId.Value);
 
-            if(userGuid.HasValue){
-                var folders = _db.Database.GetCollection<Folder>();
-
-                if(currentFolderId.HasValue){
-                    var parentFolder = folders.FirstOrDefault(o => o.FolderId = currentFolderId);
-
-                    if(parentFolder != null){
-                        folders.Add(new Folder { ParentId = parentFolder.FolderId, UserId = userGuid, FolderName = FolderName });
-                        folders.EnsureIndex(o => o.FolderId);
-                    }
-                    else
-                    {
-                        return new string[]{ "Could not create " + FolderName + " because the parent directory does not exist." };
-                    }
+                if(parentFolder != null){
+                    folders.Add(new Folder { ParentId = parentFolder.FolderId, UserId = userGuid, FolderName = FolderName });
                 }
                 else
                 {
-                    folders.Add(new Folder { ParentId = null, UserId = userGuid, FolderName = FolderName });
-                    folders.EnsureIndex(o => o.FolderId);
+                    return new string[]{ "Could not create " + FolderName + " because the parent directory does not exist." };
                 }
-
-                return new string[]{ "Folder " + FolderName + " created." };
+            }
+            else
+            {
+                folders.Add(new Folder { ParentId = null, UserId = userGuid, FolderName = FolderName });
             }
 
-            return new List<string>();
+            return new string[]{ "Folder " + FolderName + " created." };
         }
     }
 }

@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using HApi.Models;
-using HApi.Storage;
-using HApi.Storage.Entities;
 using HApi.Crypto;
 using LiteDB;
 using HApi.DataAccess;
+using HApi.Authorization;
 
 namespace HApi.Controllers
 {
@@ -18,9 +17,9 @@ namespace HApi.Controllers
     public class LoginController : ControllerBase
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly IHDbContext _db;
+        private readonly HContext _db;
 
-        public LoginController(ILogger<LoginController> logger, IHDbContext context)
+        public LoginController(ILogger<LoginController> logger, HContext context)
         {
             _logger = logger;
             _db = context;
@@ -30,9 +29,7 @@ namespace HApi.Controllers
         public LoginResult Post([FromBody] LoginParameters loginParameters)
         {
             
-            var users = _db.Database.GetCollection<User>();
-
-            User user = users.Find(o => o.Username == loginParameters.Username).FirstOrDefault();
+            var user = _db.Users.FirstOrDefault(o => o.Username == loginParameters.Username);
 
             if (user != null && user.Password_SHA256.Equals((new SHA256Hash(loginParameters.Password)).ToString()))
             {

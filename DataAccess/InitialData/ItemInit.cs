@@ -1,15 +1,17 @@
-using HApi.Storage.Entities;
+using HApi.DataAccess.Entities;
 using LiteDB;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace HApi.Storage.InitialData {
+namespace HApi.DataAccess.InitialData {
     public static class ItemInit {
-        public static void Init(LiteDatabase db)
+        public static void Init(HContext db)
         {
-            var cpus = db.GetCollection<CPU>();
+            var cpuIds = new HashSet<int>(db.CPUs.Select(o => o.Id));
 
-            if(!cpus.Exists(o => o.Id == 1))
+            if(!cpuIds.Contains(1))
             {
-                cpus.Insert(new CPU
+                db.CPUs.Add(new CPU
                 {
                     Id = 1,
                     MHZ = 200,
@@ -17,15 +19,13 @@ namespace HApi.Storage.InitialData {
                     NumCores = 1,
                     Price = 120
                 });
-
-                cpus.EnsureIndex(o => o.Id);
             }
 
-            var RAMs = db.GetCollection<RAM>();
+            var RAMIds = new HashSet<int>(db.RAMs.Select(o => o.Id));
 
-            if(!RAMs.Exists(o => o.Id == 1))
+            if(!RAMIds.Contains(1))
             {
-                RAMs.Insert(new RAM
+                db.RAMs.Add(new RAM
                 {
                     Id = 1,
                     MB = 128,
@@ -33,15 +33,13 @@ namespace HApi.Storage.InitialData {
                     Name = "Mextor SDRAM",
                     Price = 40
                 });
-
-                RAMs.EnsureIndex(o => o.Id);
             }
 
-            var GPUs = db.GetCollection<GPU>();
+            var GPUIds = new HashSet<int>(db.GPUs.Select(o => o.Id));
 
-            if(!GPUs.Exists(o => o.Id == 1))
+            if(!GPUIds.Contains(1))
             {
-                GPUs.Insert(new GPU
+                db.GPUs.Add(new GPU
                 {
                     Id = 1,
                     CoreMhz = 100,
@@ -51,45 +49,39 @@ namespace HApi.Storage.InitialData {
                     Price = 100,
                     Name = "Nidia GTX 0.1"
                 });
-
-                GPUs.EnsureIndex(o => o.Id);
             }
 
-            var HDDs = db.GetCollection<HDD>();
+            var HDDIds = new HashSet<int>(db.HDDs.Select(o => o.Id));
 
-            if(!HDDs.Exists(o => o.Id == 1))
+            if(!HDDIds.Contains(1))
             {
-                HDDs.Insert(new HDD
+                db.HDDs.Add(new HDD
                 {
                     Id = 1,
                     MB = 100,
                     Name = "SunDisk Mini",
                     Price = 59
                 });
-
-                HDDs.EnsureIndex(o => o.Id);
             }
 
-            var NetworkCards = db.GetCollection<NetworkCard>();
+            var NetworkCardIds = new HashSet<int>(db.NetworkCards.Select(o => o.Id));
 
-            if(!NetworkCards.Exists(o => o.Id == 1))
+            if(!NetworkCardIds.Contains(1))
             {
-                NetworkCards.Insert(new NetworkCard
+                db.NetworkCards.Add(new NetworkCard
                 {
                     Id = 1,
                     Kbs = 128,
                     Name = "PIMM Card",
                     Price = 30
                 });
-
-                NetworkCards.EnsureIndex(o => o.Id);
             }
 
-            var Motherboards = db.GetCollection<Motherboard>();
+            var MotherboardIds = new HashSet<int>(db.Motherboards.Select(o => o.Id));
 
-            if(!Motherboards.Exists(o => o.Id == 1))
+            if(!MotherboardIds.Contains(1))
             {
-                Motherboards.Insert(new Motherboard
+                db.Motherboards.Add(new Motherboard
                 {
                     Id = 1,
                     SataSlots = 2,
@@ -100,6 +92,8 @@ namespace HApi.Storage.InitialData {
                     Price = 200
                 });
             }
+
+            db.SaveChanges();
         }
     }
 }

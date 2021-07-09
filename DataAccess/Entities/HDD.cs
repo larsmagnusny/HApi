@@ -1,4 +1,6 @@
-namespace HApi.Storage.Entities { 
+using System.ComponentModel.DataAnnotations;
+
+namespace HApi.DataAccess.Entities { 
     public class HDD {
         [Key]
         public int Id { get; set; }

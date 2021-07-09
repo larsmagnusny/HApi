@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using HApi.Models;
-using HApi.Storage;
-using HApi.Storage.Entities;
 using HApi.Crypto;
 using HApi.DataAccess;
+using HApi.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace HApi.Controllers
 {
@@ -17,153 +17,104 @@ namespace HApi.Controllers
     public class ComputerController : ControllerBase
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly IHDbContext _db;
+        private readonly HContext _db;
 
-        public ComputerController(ILogger<LoginController> logger, IHDbContext context)
+        public ComputerController(ILogger<LoginController> logger, HContext context)
         {
             _logger = logger;
             _db = context;
         }
 
         [HttpGet]
+        [VerifyToken]
         public IEnumerable<ComputerResult> Get(Guid token)
         {
-            if (!TokenStorage.CheckToken(token))
-                return new List<ComputerResult>();
+            Guid userGuid = (Guid)HttpContext.Items["UserId"];
+            var user = _db.Users
+                .Include(o => o.Computers.Select(c => c.Motherboard))
+                .Include(o => o.Computers.Select(c => c.CPUs))
+                .Include(o => o.Computers.Select(c => c.RAMs))
+                .Include(o => o.Computers.Select(c => c.HDDs))
+                .Include(o => o.Computers.Select(c => c.GPUs))
+                .Include(o => o.Computers.Select(c => c.NetworkCards))
+                .FirstOrDefault(o => o.UserId == userGuid);
 
-            var userGuid = TokenStorage.FindUser(token);
+            var result = new List<ComputerResult>();
 
-            if (userGuid.HasValue) {
+            foreach(var computer in user.Computers)
+            {
+                var motherboard = computer.Motherboard;
+                var rCPUs = new List<CPUResult>();
+                var rGPUs = new List<GPUResult>();
+                var rHDDs = new List<HDDResult>();
+                var rNETs = new List<NETResult>();
+                var rRAMs = new List<RAMResult>();
 
-                var userComputers = _db.Database.GetCollection<UserComputer>();
-                var userCPUs = _db.Database.GetCollection<ComputerCPUParts>();
-                var userGPUs = _db.Database.GetCollection<ComputerGPUParts>();
-                var userHDDs = _db.Database.GetCollection<ComputerHDDParts>();
-                var userNETs = _db.Database.GetCollection<ComputerNetworkCardParts>();
-                var userRAMs = _db.Database.GetCollection<ComputerRAMParts>();
-                
-                var cpus = _db.Database.GetCollection<CPU>();
-                var gpus = _db.Database.GetCollection<GPU>();
-                var hdds = _db.Database.GetCollection<HDD>();
-                var nets = _db.Database.GetCollection<NetworkCard>();
-                var rams = _db.Database.GetCollection<RAM>();
-                var comps = _db.Database.GetCollection<Computer>();
-
-                var motherboards = _db.Database.GetCollection<Motherboard>();
-
-                var computers = userComputers.Find(o => o.UserId == userGuid.Value);
-
-                var result = new List<ComputerResult>();
-
-                foreach(var item in computers)
-                {
-                    var computer = comps.FindOne(o => o.Id == item.ComputerId);
-                    var rCPUs = new List<CPUResult>();
-                    var rGPUs = new List<GPUResult>();
-                    var rHDDs = new List<HDDResult>();
-                    var rNETs = new List<NETResult>();
-                    var rRAMs = new List<RAMResult>();
-
-                    var motherboard = motherboards.FindOne(o => o.Id == computer.MotherboardId);
-                    var uCPUs = userCPUs.Find(o => o.ComputerId == item.ComputerId);
-                    var uGPUs = userGPUs.Find(o => o.ComputerId == item.ComputerId);
-                    var uHDDs = userHDDs.Find(o => o.ComputerId == item.ComputerId);
-                    var uNETs = userNETs.Find(o => o.ComputerId == item.ComputerId);
-                    var uRAMs = userRAMs.Find(o => o.ComputerId == item.ComputerId);
-
-                    foreach (var uCPU in uCPUs) {
-                        var cpu = cpus.FindOne(o => o.Id == uCPU.CPUId);
-
-                        if (cpu == null)
-                            continue;
-
-                        rCPUs.Add(new CPUResult
-                        {
-                            NumCores = cpu.NumCores,
-                            MHZ = cpu.MHZ,
-                            Name = cpu.Name
-                        });
-                    }
-
-                    foreach (var uGPU in uGPUs)
+                foreach (var cpu in computer.CPUs) {
+                    rCPUs.Add(new CPUResult
                     {
-                        var gpu = gpus.FindOne(o => o.Id == uGPU.GPUId);
-
-                        if (gpu == null)
-                            continue;
-
-                        rGPUs.Add(new GPUResult
-                        {
-                            CoreMhz = gpu.CoreMhz,
-                            MB = gpu.MB,
-                            MemMhz = gpu.MemMhz,
-                            Name = gpu.Name,
-                            NumCores = gpu.NumCores
-                        });
-                    }
-
-                    foreach (var uHDD in uHDDs)
-                    {
-                        var hdd = hdds.FindOne(o => o.Id == uHDD.HDDId);
-
-                        if (hdd == null)
-                            continue;
-
-                        rHDDs.Add(new HDDResult
-                        {
-                            MB = hdd.MB,
-                            Name = hdd.Name
-                        });
-                    }
-
-                    foreach (var uRAM in uRAMs)
-                    {
-                        var ram = rams.FindOne(o => o.Id == uRAM.RAMId);
-
-                        if (ram == null)
-                            continue;
-
-                        rRAMs.Add(new RAMResult
-                        {
-                            MB = ram.MB,
-                            MHZ = ram.MHZ,
-                            Name = ram.Name
-                        });
-                    }
-
-                    foreach (var uNET in uNETs)
-                    {
-                        var net = nets.FindOne(o => o.Id == uNET.NetworkCardId);
-
-                        if (net == null)
-                            continue;
-
-                        rNETs.Add(new NETResult
-                        {
-                            Kbs = net.Kbs,
-                            Name = net.Name
-                        });
-                    }
-
-                    result.Add(new ComputerResult
-                    {
-                        Cpus = rCPUs.ToArray(),
-                        Gpus = rGPUs.ToArray(),
-                        Hdds = rHDDs.ToArray(),
-                        Nets = rNETs.ToArray(),
-                        Rams = rRAMs.ToArray(),
-                        SataSlots = motherboard.SataSlots,
-                        CPUSlots = motherboard.CPUSlots,
-                        PCISlots = motherboard.PCISlots,
-                        RAMSlots = motherboard.RAMSlots,
-                        Name = motherboard.Name
+                        NumCores = cpu.NumCores,
+                        MHZ = cpu.MHZ,
+                        Name = cpu.Name
                     });
                 }
 
-                return result;
+                foreach (var gpu in computer.GPUs)
+                {
+                    rGPUs.Add(new GPUResult
+                    {
+                        CoreMhz = gpu.CoreMhz,
+                        MB = gpu.MB,
+                        MemMhz = gpu.MemMhz,
+                        Name = gpu.Name,
+                        NumCores = gpu.NumCores
+                    });
+                }
+
+                foreach (var hdd in computer.HDDs)
+                {
+                    rHDDs.Add(new HDDResult
+                    {
+                        MB = hdd.MB,
+                        Name = hdd.Name
+                    });
+                }
+
+                foreach (var ram in computer.RAMs)
+                {
+                    rRAMs.Add(new RAMResult
+                    {
+                        MB = ram.MB,
+                        MHZ = ram.MHZ,
+                        Name = ram.Name
+                    });
+                }
+
+                foreach (var net in computer.NetworkCards)
+                {
+                    rNETs.Add(new NETResult
+                    {
+                        Kbs = net.Kbs,
+                        Name = net.Name
+                    });
+                }
+
+                result.Add(new ComputerResult
+                {
+                    Cpus = rCPUs.ToArray(),
+                    Gpus = rGPUs.ToArray(),
+                    Hdds = rHDDs.ToArray(),
+                    Nets = rNETs.ToArray(),
+                    Rams = rRAMs.ToArray(),
+                    SataSlots = motherboard.SataSlots,
+                    CPUSlots = motherboard.CPUSlots,
+                    PCISlots = motherboard.PCISlots,
+                    RAMSlots = motherboard.RAMSlots,
+                    Name = motherboard.Name
+                });
             }
 
-            return new List<ComputerResult>();
+            return result;
         }
     }
 }

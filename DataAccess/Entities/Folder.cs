@@ -1,4 +1,7 @@
-namespace HApi.Storage.Entities {
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace HApi.DataAccess.Entities {
     public class Folder {
         [Key]
         public int FolderId { get;set; }

@@ -1,7 +1,7 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.DataAnnotations;
 
-namespace HApi.Storage.Entities {
+namespace HApi.DataAccess.Entities {
     public class Profile {
         [Key]
         public Guid UserId{ get; set; }

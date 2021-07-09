@@ -1,4 +1,6 @@
-namespace HApi.Storage.Entities {
+using System.ComponentModel.DataAnnotations;
+
+namespace HApi.DataAccess.Entities {
     public class GPU {
         [Key]
         public int Id { get; set; }
