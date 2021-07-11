@@ -12,6 +12,7 @@ namespace HApi.DataAccess.InitialData
             foreach(var user in users)
             {
                 UserComputerInit.Init(db, user.UserId);
+                db.ChangeTracker.Clear();
             }
         }
     }

@@ -15,41 +15,54 @@ namespace HApi.DataAccess.InitialData
 
             var newComputer = new Computer
             {
-                MotherboardId = 1,
-                Name = "First computer",
+                Name = "First computer"
             };
+
+            var motherboard = new Motherboard { Id = 1 };
+            db.Motherboards.Attach(motherboard);
+            newComputer.Motherboard = motherboard;
 
             user.Computers.Add(newComputer);
 
             // Add cpus
-            newComputer.CPUs.Add(new CPU
+            var newCPU = new CPU
             {
                 Id = 1
-            });
+            };
+            db.CPUs.Attach(newCPU);
+            newComputer.CPUs.Add(newCPU);
 
             // Add gpus
-            newComputer.GPUs.Add(new GPU
+            var newGPU = new GPU
             {
                 Id = 1
-            });
+            };
+            db.GPUs.Attach(newGPU);
+            newComputer.GPUs.Add(newGPU);
 
             // Add Hdds
-            newComputer.HDDs.Add(new HDD
+            var newHDD = new HDD
             {
                 Id = 1
-            });
+            };
+            db.HDDs.Attach(newHDD);
+            newComputer.HDDs.Add(newHDD);
 
             // Add network cards
-            newComputer.NetworkCards.Add(new NetworkCard
+            var newNetworkCard = new NetworkCard
             {
                 Id = 1
-            });
+            };
+            db.NetworkCards.Attach(newNetworkCard);
+            newComputer.NetworkCards.Add(newNetworkCard);
 
             // Add RAM
-            newComputer.RAMs.Add(new RAM
+            var newRAM = new RAM
             {
                 Id = 1
-            });
+            };
+            db.RAMs.Attach(newRAM);
+            newComputer.RAMs.Add(newRAM);
 
             db.SaveChanges();
         }

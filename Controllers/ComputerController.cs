@@ -31,12 +31,8 @@ namespace HApi.Controllers
         {
             Guid userGuid = (Guid)HttpContext.Items["UserId"];
             var user = _db.Users
-                .Include(o => o.Computers.Select(c => c.Motherboard))
-                .Include(o => o.Computers.Select(c => c.CPUs))
-                .Include(o => o.Computers.Select(c => c.RAMs))
-                .Include(o => o.Computers.Select(c => c.HDDs))
-                .Include(o => o.Computers.Select(c => c.GPUs))
-                .Include(o => o.Computers.Select(c => c.NetworkCards))
+                .Include(o => o.Computers)
+                .AsNoTracking()
                 .FirstOrDefault(o => o.UserId == userGuid);
 
             var result = new List<ComputerResult>();
@@ -106,11 +102,11 @@ namespace HApi.Controllers
                     Hdds = rHDDs.ToArray(),
                     Nets = rNETs.ToArray(),
                     Rams = rRAMs.ToArray(),
-                    SataSlots = motherboard.SataSlots,
-                    CPUSlots = motherboard.CPUSlots,
-                    PCISlots = motherboard.PCISlots,
-                    RAMSlots = motherboard.RAMSlots,
-                    Name = motherboard.Name
+                    SataSlots = motherboard?.SataSlots ?? 0,
+                    CPUSlots = motherboard?.CPUSlots ?? 0,
+                    PCISlots = motherboard?.PCISlots ?? 0,
+                    RAMSlots = motherboard?.RAMSlots ?? 0,
+                    Name = motherboard?.Name
                 });
             }
 

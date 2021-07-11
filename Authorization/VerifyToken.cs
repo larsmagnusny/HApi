@@ -36,8 +36,8 @@ namespace HApi.Authorization
                     base.OnActionExecuting(context);
                 }
             }
-
-            context.Result = new ForbidResult();
+            else
+                context.Result = new ForbidResult();
         }
     }
 }

@@ -7,5 +7,6 @@ namespace HApi.DataAccess
 {
     public interface IHContext
     {
+        void DetachAllEntities();
     }
 }
