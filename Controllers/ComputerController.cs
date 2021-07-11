@@ -32,6 +32,22 @@ namespace HApi.Controllers
             Guid userGuid = (Guid)HttpContext.Items["UserId"];
             var user = _db.Users
                 .Include(o => o.Computers)
+                    .ThenInclude(o => o.Motherboard)
+                .Include(o => o.Computers)
+                    .ThenInclude(o => o.CPUs)
+                    .ThenInclude(o => o.CPU)
+                .Include(o => o.Computers)
+                    .ThenInclude(o => o.GPUs)
+                    .ThenInclude(o => o.GPU)
+                .Include(o => o.Computers)
+                    .ThenInclude(o => o.RAMs)
+                    .ThenInclude(o => o.RAM)
+                .Include(o => o.Computers)
+                    .ThenInclude(o => o.HDDs)
+                    .ThenInclude(o => o.HDD)
+                .Include(o => o.Computers)
+                    .ThenInclude(o => o.NetworkCards)
+                    .ThenInclude(o => o.NetworkCard)
                 .AsNoTracking()
                 .FirstOrDefault(o => o.UserId == userGuid);
 
@@ -49,9 +65,9 @@ namespace HApi.Controllers
                 foreach (var cpu in computer.CPUs) {
                     rCPUs.Add(new CPUResult
                     {
-                        NumCores = cpu.NumCores,
-                        MHZ = cpu.MHZ,
-                        Name = cpu.Name
+                        NumCores = cpu.CPU.NumCores,
+                        MHZ = cpu.CPU.MHZ,
+                        Name = cpu.CPU.Name
                     });
                 }
 
@@ -59,11 +75,11 @@ namespace HApi.Controllers
                 {
                     rGPUs.Add(new GPUResult
                     {
-                        CoreMhz = gpu.CoreMhz,
-                        MB = gpu.MB,
-                        MemMhz = gpu.MemMhz,
-                        Name = gpu.Name,
-                        NumCores = gpu.NumCores
+                        CoreMhz = gpu.GPU.CoreMhz,
+                        MB = gpu.GPU.MB,
+                        MemMhz = gpu.GPU.MemMhz,
+                        Name = gpu.GPU.Name,
+                        NumCores = gpu.GPU.NumCores
                     });
                 }
 
@@ -71,8 +87,8 @@ namespace HApi.Controllers
                 {
                     rHDDs.Add(new HDDResult
                     {
-                        MB = hdd.MB,
-                        Name = hdd.Name
+                        MB = hdd.HDD.MB,
+                        Name = hdd.HDD.Name
                     });
                 }
 
@@ -80,9 +96,9 @@ namespace HApi.Controllers
                 {
                     rRAMs.Add(new RAMResult
                     {
-                        MB = ram.MB,
-                        MHZ = ram.MHZ,
-                        Name = ram.Name
+                        MB = ram.RAM.MB,
+                        MHZ = ram.RAM.MHZ,
+                        Name = ram.RAM.Name
                     });
                 }
 
@@ -90,8 +106,8 @@ namespace HApi.Controllers
                 {
                     rNETs.Add(new NETResult
                     {
-                        Kbs = net.Kbs,
-                        Name = net.Name
+                        Kbs = net.NetworkCard.Kbs,
+                        Name = net.NetworkCard.Name
                     });
                 }
 

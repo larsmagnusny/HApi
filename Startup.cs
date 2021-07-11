@@ -22,7 +22,7 @@ namespace HApi
         {
             TokenStorage.Init(Configuration.GetSection("TokenStorage"));
 
-            services.AddSingleton<HContext>();
+            services.AddScoped<HContext>();
             services.AddCors();
             services.AddControllers();
         }

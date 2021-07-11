@@ -16,8 +16,18 @@ namespace HApi.DataAccess {
         public DbSet<NetworkCard> NetworkCards { get; set; }
         public DbSet<Folder> Folders { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite(@"Data Source=HDatabase.db");
+        protected override void OnConfiguring(DbContextOptionsBuilder options) {
+            options.UseSqlite(@"Data Source=HDatabase.db");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ComputerCPU>().HasKey(o => new { o.ComputerId, o.CPUId });
+            modelBuilder.Entity<ComputerGPU>().HasKey(o => new { o.ComputerId, o.GPUId });
+            modelBuilder.Entity<ComputerHDD>().HasKey(o => new { o.ComputerId, o.HDDId });
+            modelBuilder.Entity<ComputerNetworkCard>().HasKey(o => new { o.ComputerId, o.NetworkCardId });
+            modelBuilder.Entity<ComputerRAM>().HasKey(o => new { o.ComputerId, o.RAMId });
+        }
 
         public void DetachAllEntities()
         {
